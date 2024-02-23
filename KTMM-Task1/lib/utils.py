@@ -18,6 +18,8 @@ from numpy import ndarray
 
 
 def triangle_area(vertices: ndarray) -> float:
+    '''Calculates triangle area in 3D space.'''
+    
     # Parallelogram vectors
     vector1 = vertices[1] - vertices[0]
     vector2 = vertices[2] - vertices[0]

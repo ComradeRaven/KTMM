@@ -18,18 +18,22 @@ from numpy import ndarray
 
 
 class MeshPart:
+    '''Holds faces, associated with some mesh part.'''
     
     def __init__(self, faces: ndarray) -> None:
         self.faces = faces
     
     
     def calculate_area(self, vertices) -> None:
+        '''Calculates full mesh part area (regardless of intersections).'''
+        
         self.area = 0
         for face in self.faces:
             self.area += utils.triangle_area(vertices[face])
 
 
 class Mesh:
+    '''Represents .obj mesh.'''
     
     def __init__(self, filepath: str) -> None:
         # Load data
@@ -41,6 +45,8 @@ class Mesh:
     
     
     def load_mesh(self, filepath: str) -> tuple[ndarray, list[MeshPart]]:
+        '''Loads mesh geometry.'''
+        
         # Geometry
         vertices = []
         mesh_parts = []
