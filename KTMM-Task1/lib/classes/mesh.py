@@ -24,7 +24,7 @@ class MeshPart:
         self.faces = faces
     
     
-    def calculate_area(self, vertices) -> None:
+    def calculate_area(self, vertices: ndarray) -> None:
         '''Calculates full mesh part area (regardless of intersections).'''
         
         self.area = 0
