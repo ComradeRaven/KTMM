@@ -3,8 +3,6 @@
 ###########
 
 
-# Math
-import math
 # Handy arrays
 import numpy as np
 # Custom modules
@@ -12,7 +10,6 @@ import lib.utils as utils
 
 # For annotations
 from numpy import ndarray
-from io import TextIOWrapper
 
 
 ######################
