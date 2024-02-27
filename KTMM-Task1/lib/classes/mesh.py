@@ -24,12 +24,18 @@ class MeshPart:
         self.faces = faces
     
     
-    def calculate_area(self, vertices: ndarray) -> None:
-        '''Calculates full mesh part area (regardless of intersections).'''
+    def calculate_surface(self, vertices: ndarray, intercestions_surface: ndarray) -> float:
+        '''Calculates mesh part surface (without intersections).'''
         
-        self.area = 0
+        # Total surface
+        surface = 0
         for face in self.faces:
-            self.area += utils.triangle_area(vertices[face])
+            surface += utils.triangle_surface(vertices[face])
+        
+        # Substract intersections
+        surface -= intercestions_surface
+        
+        return surface
 
 
 class Mesh:
@@ -39,9 +45,14 @@ class Mesh:
         # Load data
         self.vertices, self.mesh_parts = self.load_mesh(filepath)
         
-        # Calculate area for mesh parts
-        for mesh in self.mesh_parts:
-            mesh.calculate_area(self.vertices)
+        # Intersections matrix
+        self.intercestions_surfaces = utils.intercestions_matrix(self)
+        
+        # Calculate surface for each mesh part
+        self.surfaces = []
+        for i in range(len(self.mesh_parts)):
+            self.surfaces.append(self.mesh_parts[i].calculate_surface(self.vertices, np.sum(self.intercestions_surfaces[i])))
+        self.surfaces = np.array(self.surfaces)
     
     
     def load_mesh(self, filepath: str) -> tuple[ndarray, list[MeshPart]]:
