@@ -18,14 +18,14 @@ from numpy import ndarray
 
 
 class MeshPart:
-    '''Holds faces, associated with some mesh part.'''
+    """Holds faces, associated with some mesh part."""
     
     def __init__(self, faces: ndarray) -> None:
         self.faces = faces
     
     
     def calculate_surface(self, vertices: ndarray, intercestions_surface: ndarray) -> float:
-        '''Calculates mesh part surface (without intersections).'''
+        """Calculates mesh part surface (without intersections)."""
         
         # Total surface
         surface = 0
@@ -39,14 +39,14 @@ class MeshPart:
 
 
 class Mesh:
-    '''Represents .obj mesh.'''
+    """Represents .obj mesh."""
     
     def __init__(self, filepath: str) -> None:
         # Load data
         self.vertices, self.mesh_parts = self.load_mesh(filepath)
         
         # Intersections matrix
-        self.intercestions_surfaces = utils.intercestions_matrix(self)
+        self.intercestions_surfaces = self.intercestions_matrix()
         
         # Calculate surface for each mesh part
         self.surfaces = []
@@ -56,7 +56,7 @@ class Mesh:
     
     
     def load_mesh(self, filepath: str) -> tuple[ndarray, list[MeshPart]]:
-        '''Loads mesh geometry.'''
+        """Loads mesh geometry."""
         
         # Geometry
         vertices = []
@@ -98,3 +98,37 @@ class Mesh:
                 line = f.readline()
         
         return np.array(vertices), mesh_parts
+    
+    
+    def intercestions_matrix(self) -> ndarray:
+        """Produces matrix with intersections surfaces."""
+        
+        # Intersection between parts from bottom to top (from part[0] to part [4]) are located at
+        # y = 0, 6, 8, 9 respectively
+        intersections_y = [0, 6, 8, 9]
+        intersection_surfaces = np.empty((len(self.mesh_parts) - 1))
+        for i in range(0, 4):
+            mesh_part = self.mesh_parts[i]
+            intersection_surface = 0
+            
+            for face in mesh_part.faces:
+                vert = self.vertices[face]
+                
+                # Check Y coordinates
+                if vert[0][1] == vert[1][1] == vert[2][1] == intersections_y[i]:
+                    intersection_surface += utils.triangle_surface(self.vertices[face])
+            
+            intersection_surfaces[i] = intersection_surface
+        
+        # Intersections surfaces matrix filling
+        intersections_surfaces = np.zeros((5, 5))
+        intersections_surfaces[0, 1] = intersection_surfaces[0]
+        intersections_surfaces[1, 0] = intersection_surfaces[0]
+        intersections_surfaces[1, 2] = intersection_surfaces[1]
+        intersections_surfaces[2, 1] = intersection_surfaces[1]
+        intersections_surfaces[2, 3] = intersection_surfaces[2]
+        intersections_surfaces[3, 2] = intersection_surfaces[2]
+        intersections_surfaces[3, 4] = intersection_surfaces[3]
+        intersections_surfaces[4, 3] = intersection_surfaces[3]
+        
+        return intersections_surfaces
