@@ -10,6 +10,7 @@ from PyQt6 import QtWidgets
 from PyQt6.QtGui import QAction
 # Custom modules
 from lib.classes.mesh import Mesh
+from lib.classes.config import Config
 
 
 ###################
@@ -33,6 +34,8 @@ class MainWindow(QtWidgets.QMainWindow):
         button_config = QAction('Config', self)
         button_config.triggered.connect(self.onConfigButtonClick)
         toolbar.addAction(button_config)
+        
+        self.config = None
         
         # Show App window
         self.show()
@@ -73,7 +76,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     # save data
                     eps = [config['eps1'], config['eps2'], config['eps3'], config['eps4'], config['eps5']]
                     c = [config['c1'], config['c2'], config['c3'], config['c4'], config['c5']]
-                    print(eps, c)
+                    self.config = Config(eps, c)
+                    print(self.config.eps, self.config.c)
 
                 # Invalid data
                 else:
