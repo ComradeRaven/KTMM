@@ -5,6 +5,10 @@
 
 # Handy arrays
 import numpy as np
+# System
+import sys
+# UI
+from PyQt6 import QtCore, QtWidgets
 # Custom modules
 import lib.utils as Utils
 from lib.classes.mesh import Mesh
@@ -14,12 +18,24 @@ from lib.classes.mesh import Mesh
 # Program #
 ###########
 
-filepath = 'model/model1.obj'
+class MainWindow(QtWidgets.QMainWindow):
 
-mesh = Mesh(filepath)
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
 
-print('vertex array shape: ', mesh.vertices.shape)
-print('Mesh parts surfaces:')
-print(mesh.surfaces)
-print('Intersections surfaces:')
-print(mesh.intercestions_surfaces)
+        filepath = 'model/model1.obj'
+
+        self.mesh = Mesh(filepath)
+        
+        self.show()
+
+        print('vertex array shape: ', self.mesh.vertices.shape)
+        print('Mesh parts surfaces:')
+        print(self.mesh.surfaces)
+        print('Intersections surfaces:')
+        print(self.mesh.intercestions_surfaces)
+
+# Run app
+app = QtWidgets.QApplication(sys.argv)
+w = MainWindow()
+app.exec()
