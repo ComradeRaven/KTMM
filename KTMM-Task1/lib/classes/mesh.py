@@ -18,14 +18,23 @@ from numpy import ndarray
 
 
 class MeshPart:
-    """Holds faces, associated with some mesh part."""
+    """Holds faces, associated with some mesh part.
+    """
     
     def __init__(self, faces: ndarray) -> None:
         self.faces = faces
     
     
-    def calculate_surface(self, vertices: ndarray, intercestions_surface: ndarray) -> float:
-        """Calculates mesh part surface (without intersections)."""
+    def calculate_surface(self, vertices: ndarray, intersections_surface: ndarray) -> float:
+        """Calculates mesh part surface.
+
+        Args:
+            vertices (ndarray): vertices of entire mesh.
+            intersections_surface (ndarray): mesh part intersections (with other parts) surface.
+
+        Returns:
+            float: mesh part surface.
+        """
         
         # Total surface
         surface = 0
@@ -33,13 +42,14 @@ class MeshPart:
             surface += utils.triangle_surface(vertices[face])
         
         # Substract intersections
-        surface -= intercestions_surface
+        surface -= intersections_surface
         
         return surface
 
 
 class Mesh:
-    """Represents .obj mesh."""
+    """Represents .obj mesh.
+    """
     
     def __init__(self, filepath: str) -> None:
         # Load data
@@ -56,7 +66,14 @@ class Mesh:
     
     
     def load_mesh(self, filepath: str) -> tuple[ndarray, list[MeshPart]]:
-        """Loads mesh geometry."""
+        """Loads mesh geometry.
+
+        Args:
+            filepath (str): path to file.
+
+        Returns:
+            tuple[ndarray, list[MeshPart]]: vertices and list of mesh parts.
+        """
         
         # Geometry
         vertices = []
@@ -101,7 +118,11 @@ class Mesh:
     
     
     def intercestions_matrix(self) -> ndarray:
-        """Produces matrix with intersections surfaces."""
+        """Produces matrix with intersections surfaces.
+
+        Returns:
+            ndarray: matrix with intersections surfaces.
+        """
         
         # Intersection between parts from bottom to top (from part[0] to part [4]) are located at
         # y = 0, 6, 8, 9 respectively

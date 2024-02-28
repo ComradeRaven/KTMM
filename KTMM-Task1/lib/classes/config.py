@@ -13,7 +13,8 @@ import numpy as np
 
 
 class Config:
-    """Holds program config."""
+    """Holds program config.
+    """
     
     def __init__(self, eps: list, c: list) -> None:
         self.eps = np.array(eps)

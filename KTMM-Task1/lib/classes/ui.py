@@ -3,6 +3,8 @@
 ###########
 
 
+# Handy arrays
+import numpy as np
 # .json files
 import json
 # UI
@@ -11,6 +13,7 @@ from PyQt6.QtGui import QAction
 # Custom modules
 from lib.classes.mesh import Mesh
 from lib.classes.config import Config
+from lib.classes.plotting import MplCanvas
 
 
 ###################
@@ -19,7 +22,8 @@ from lib.classes.config import Config
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    """Defines app main window."""
+    """Defines app main window.
+    """
     
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -34,8 +38,14 @@ class MainWindow(QtWidgets.QMainWindow):
         button_config = QAction('Config', self)
         button_config.triggered.connect(self.onConfigButtonClick)
         toolbar.addAction(button_config)
-        
+        # Set empty config
         self.config = None
+        
+        # Init plot canvas
+        self.plot = MplCanvas()
+        self.setCentralWidget(self.plot)
+        # Plot simple data
+        #Plotting.plot_functions(self.plot.subplot, [Plotting.FuncToPlot1D(np.linspace(0, 100), np.linspace(0, 100), r'$LinFunc$', 'r')])
         
         # Show App window
         self.show()
@@ -52,8 +62,23 @@ class MainWindow(QtWidgets.QMainWindow):
         print(self.mesh.intercestions_surfaces)
     
     
-    def onConfigButtonClick(self, s):
-        """Handles config button click event."""
+    def plotData(self, functions=[MplCanvas.FuncToPlot1D(np.linspace(0, 100), np.linspace(0, 100), r'$LinFunc$', 'r')]) -> None:
+        """Plots provided data on canvas.
+
+        Args:
+            functions (list, optional): functions to plot. Defaults to [MplCanvas.FuncToPlot1D(np.linspace(0, 100), np.linspace(0, 100), r'$', 'r')].
+        """
+        
+        # Clear figure
+        self.plot.figure.clf()
+        # Plot data
+        self.plot.plot_functions(functions, 't')
+        self.plot.draw()
+    
+    
+    def onConfigButtonClick(self, s) -> None:
+        """Handles config button click event.
+        """
         
         # Open file selection dialog
         dialog = QtWidgets.QFileDialog(self)
@@ -78,6 +103,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     c = [config['c1'], config['c2'], config['c3'], config['c4'], config['c5']]
                     self.config = Config(eps, c)
                     print(self.config.eps, self.config.c)
+                    
+                    self.plotData()
 
                 # Invalid data
                 else:
