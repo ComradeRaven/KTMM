@@ -103,8 +103,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     c = [config['c1'], config['c2'], config['c3'], config['c4'], config['c5']]
                     self.config = Config(eps, c)
                     print(self.config.eps, self.config.c)
-                    
-                    self.plotData()
 
                 # Invalid data
                 else:
