@@ -81,9 +81,8 @@ def calculate_temperatures(mesh: Mesh, config: Config) -> tuple[ndarray, list[nd
     eval_equation_wrapping = lambda y, t: eval_equation(y, t, mesh, config)
     
     # Solve ODE
-    t = np.linspace(0, 5, 21)
-    y0 = np.array([0, 0, 0, 0, 0])
-    values = integrate.odeint(eval_equation_wrapping, y0, t)
+    t = eval(config.t, globals(), locals())
+    values = integrate.odeint(eval_equation_wrapping, config.y0, t)
     
     # Extract functions values
     y1 = values[:, 0]

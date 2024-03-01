@@ -91,13 +91,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 config = json.load(f)
                 
                 # Check keys
-                if {'eps', 'c', 'lambda', 'Q_R'} <= config.keys():
+                if {'eps', 'c', 'lambda', 'Q_R', 'y0', 't'} <= config.keys():
                     
                     # Save config
-                    self.config = Config(config['eps'], config['c'], config['lambda'], config['Q_R'])
+                    self.config = Config(config['eps'], config['c'], config['lambda'], config['Q_R'], config['y0'], config['t'])
                     
                     # Debug
-                    print('Loaded config: ', self.config.eps, self.config.c, self.config.therm_cond_coefs, self.config.q_r)
+                    print('Loaded config: ',
+                          self.config.eps,
+                          self.config.c,
+                          self.config.therm_cond_coefs,
+                          self.config.q_r,
+                          self.config.y0,
+                          self.config.t)
                     
                     # Calculate temperatures
                     t, y = utils.calculate_temperatures(self.mesh, self.config)
