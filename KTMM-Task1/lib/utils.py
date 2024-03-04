@@ -54,7 +54,7 @@ def eval_equation(y, t, mesh: Mesh, config: Config) -> ndarray:
     q_tc = - mesh.intercestions_surfaces * config.therm_cond_coefs
     for i in range(q_tc.shape[0]):
         for j in range(i+1, q_tc.shape[1]):
-            q_tc *= y[j] - y[i]
+            q_tc[i, j] *= y[i] - y[j]
     
     # Q_E
     q_e = - 5.67 * config.eps * mesh.surfaces * (y/100)**4
