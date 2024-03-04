@@ -115,6 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         funcs_to_plot.append(MplCanvas.FuncToPlot1D(t, y[i], r'$elem_{y_num}$'.format(y_num=i)))
                     self.plot_data(funcs_to_plot)
                     
+                    # Save .csv file
                     np.savetxt('output.csv', odeinit_output, delimiter = ",")
 
                 # Invalid data
