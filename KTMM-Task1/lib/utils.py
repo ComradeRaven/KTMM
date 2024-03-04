@@ -54,7 +54,7 @@ def eval_equation(y, t, mesh: Mesh, config: Config) -> ndarray:
     q_tc = - mesh.intercestions_surfaces * config.therm_cond_coefs
     for i in range(q_tc.shape[0]):
         for j in range(i+1, q_tc.shape[1]):
-            q_tc[i, j] *= y[i] - y[j]
+            q_tc[i, j] *= y[j] - y[i]
     
     # Q_E
     q_e = - 5.67 * config.eps * mesh.surfaces * (y/100)**4
@@ -82,14 +82,14 @@ def calculate_temperatures(mesh: Mesh, config: Config) -> tuple[ndarray, list[nd
     
     # Solve ODE
     t = eval(config.t, globals(), locals())
-    values = integrate.odeint(eval_equation_wrapping, config.y0, t)
+    odeinit_output = integrate.odeint(eval_equation_wrapping, config.y0, t)
     
     # Extract functions values
-    y1 = values[:, 0]
-    y2 = values[:, 1]
-    y3 = values[:, 2]
-    y4 = values[:, 3]
-    y5 = values[:, 4]
+    y1 = odeinit_output[:, 0]
+    y2 = odeinit_output[:, 1]
+    y3 = odeinit_output[:, 2]
+    y4 = odeinit_output[:, 3]
+    y5 = odeinit_output[:, 4]
     
     # Construct result
-    return t, [y1, y2, y3, y4, y5]
+    return t, [y1, y2, y3, y4, y5], odeinit_output

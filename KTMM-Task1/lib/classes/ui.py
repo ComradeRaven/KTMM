@@ -3,6 +3,8 @@
 ###########
 
 
+# Handy arrays
+import numpy as np
 # .json files
 import json
 # UI
@@ -106,12 +108,14 @@ class MainWindow(QtWidgets.QMainWindow):
                           self.config.t)
                     
                     # Calculate temperatures
-                    t, y = utils.calculate_temperatures(self.mesh, self.config)
+                    t, y, odeinit_output = utils.calculate_temperatures(self.mesh, self.config)
                     # Plot
                     funcs_to_plot = []
                     for i in range(len(y)):
                         funcs_to_plot.append(MplCanvas.FuncToPlot1D(t, y[i], r'$elem_{y_num}$'.format(y_num=i)))
                     self.plot_data(funcs_to_plot)
+                    
+                    np.savetxt('output.csv', odeinit_output, delimiter = ",")
 
                 # Invalid data
                 else:
