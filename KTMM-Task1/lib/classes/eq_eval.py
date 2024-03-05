@@ -27,6 +27,7 @@ class EquationEvaluator:
     def __init__(self, mesh: Mesh, config: Config) -> None:
         # K_ij
         self.k = - mesh.intercestions_surfaces * config.therm_cond_coefs
+        self.k += np.transpose(self.k) # Duplicate coefficients over diagonal to respect heat traveling in both directions
         # Surfaces heat loss
         self.heat_loss = - 5.67 * config.eps * mesh.surfaces
         # Q_R
