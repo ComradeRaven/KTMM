@@ -12,6 +12,7 @@ import scipy.integrate as integrate
 # Custom modules
 from lib.classes.mesh import Mesh
 from lib.classes.config import Config
+from lib.classes.eq_eval import EquationEvaluator
 
 # For annotations
 from numpy import ndarray
@@ -37,35 +38,6 @@ def triangle_surface(vertices: ndarray) -> float:
     return math.sqrt(np.sum(cross**2)) / 2
 
 
-def eval_equation(y, t, mesh: Mesh, config: Config) -> ndarray:
-    """Evaluates task equation.
-
-    Args:
-        y (_type_): y vector.
-        t (_type_): time point.
-        mesh (Mesh): model.
-        config (Config): config.
-
-    Returns:
-        New y vector.
-    """
-    
-    # Q_TC
-    q_tc = - mesh.intercestions_surfaces * config.therm_cond_coefs
-    for i in range(q_tc.shape[0]):
-        for j in range(i+1, q_tc.shape[1]):
-            q_tc[i, j] *= y[j] - y[i]
-    
-    # Q_E
-    q_e = - 5.67 * config.eps * mesh.surfaces * (y/100)**4
-    
-    # Q_R
-    q_r = eval(config.q_r, globals(), locals())
-    
-    # Formula from docs
-    return (np.sum(q_tc, axis=1) + q_e + q_r) / config.c
-
-
 def calculate_temperatures(mesh: Mesh, config: Config) -> tuple[ndarray, list[ndarray]]:
     """Calculates temperatures of mesh elements.
 
@@ -77,12 +49,12 @@ def calculate_temperatures(mesh: Mesh, config: Config) -> tuple[ndarray, list[nd
         (time range, [mesh part1 temperature, ...])
     """
     
-    # Wrap evaluation function
-    eval_equation_wrapping = lambda y, t: eval_equation(y, t, mesh, config)
+    # Equation evaluator
+    eq_eval = EquationEvaluator(mesh, config, 5)
     
     # Solve ODE
     t = eval(config.t, globals(), locals())
-    odeinit_output = integrate.odeint(eval_equation_wrapping, config.y0, t)
+    odeinit_output = integrate.odeint(eq_eval.eval_equation, config.y0, t)
     
     # Extract functions values
     y1 = odeinit_output[:, 0]

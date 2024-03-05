@@ -144,8 +144,12 @@ class Mesh:
         # Intersections surfaces matrix filling
         intersections_surfaces = np.zeros((5, 5))
         intersections_surfaces[0, 1] = intersection_surfaces[0]
+        intersections_surfaces[1, 0] = intersection_surfaces[0]
         intersections_surfaces[1, 2] = intersection_surfaces[1]
+        intersections_surfaces[2, 1] = intersection_surfaces[1]
         intersections_surfaces[2, 3] = intersection_surfaces[2]
+        intersections_surfaces[3, 2] = intersection_surfaces[2]
         intersections_surfaces[3, 4] = intersection_surfaces[3]
+        intersections_surfaces[4, 3] = intersection_surfaces[3]
         
         return intersections_surfaces
