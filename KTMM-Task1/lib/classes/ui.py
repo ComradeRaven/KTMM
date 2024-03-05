@@ -8,6 +8,7 @@ import numpy as np
 # .json files
 import json
 # UI
+from PyQt6 import QtCore
 from PyQt6 import QtWidgets
 from PyQt6.QtGui import QAction
 # Custom modules
@@ -15,6 +16,9 @@ import lib.utils as utils
 from lib.classes.mesh import Mesh
 from lib.classes.config import Config
 from lib.classes.plotting import MplCanvas
+
+# For annotations
+from numpy import ndarray
 
 
 ###################
@@ -54,7 +58,27 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # Plot canvas
         self.plot = MplCanvas()
-        self.setCentralWidget(self.plot)
+        
+        # Animation button
+        self.button_anim = QtWidgets.QPushButton("Start")
+        self.button_anim.clicked.connect(self.on_anim_button_click)
+        # Disable button for now
+        self.button_anim.setEnabled(False)
+        
+        # Grid layout
+        self.grid = QtWidgets.QGridLayout()
+        self.central_widget = QtWidgets.QWidget()
+        self.central_widget.setLayout(self.grid)
+        self.setCentralWidget(self.central_widget)
+        # Add wigets to grid
+        self.grid.addWidget(self.plot, 0, 0)
+        self.grid.addWidget(self.button_anim, 1, 0)
+        
+        # Timer
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(100)
+        self.timer.timeout.connect(self.solve)
+        self.timer_isactive = False
         
         # Show App window
         self.show()
@@ -107,21 +131,34 @@ class MainWindow(QtWidgets.QMainWindow):
                           self.config.y0,
                           self.config.t)
                     
-                    # Calculate temperatures
-                    t, y, odeinit_output = utils.calculate_temperatures(self.mesh, self.config)
-                    # Plot
-                    funcs_to_plot = []
-                    for i in range(len(y)):
-                        funcs_to_plot.append(MplCanvas.FuncToPlot1D(t, y[i], r'$elem_{y_num}$'.format(y_num=i)))
-                    self.plot_data(funcs_to_plot)
+                    # Solve ODE
+                    self.time_interval = eval(self.config.t, globals(), locals())
+                    self.y0 = self.config.y0
+                    odeinit_output = self.solve()
                     
                     # Save .csv file
                     np.savetxt('output.csv', odeinit_output, delimiter = ",")
-
+                    
+                    # Enable animation button
+                    self.button_anim.setDisabled(False)
+                    
                 # Invalid data
                 else:
                     QtWidgets.QMessageBox.warning(self, 'Error', 'Invalid config file contents')
     
+    
+    def on_anim_button_click(self):
+        """Starts or stops animation."""
+        
+        if self.timer_isactive:
+            self.timer_isactive = False
+            self.button_anim.setText('Start')
+            self.timer.stop()
+        else:
+            self.timer_isactive = True
+            self.button_anim.setText('Stop')
+            self.timer.start()
+        
     
     def open_file_dialog(self, name_filter: str):
         """Opens a dialog for selecting a single file with provided extension.
@@ -152,15 +189,34 @@ class MainWindow(QtWidgets.QMainWindow):
             return None
     
     
-    def plot_data(self, functions) -> None:
-        """Plots provided data on canvas.
-
-        Args:
-            functions (list, optional): functions to plot.
+    def solve(self):
+        """Solves equation with current data.
         """
         
+        # Calculate temperatures
+        odeinit_output = utils.calculate_temperatures(self.mesh, self.config, self.y0, self.time_interval)
+        # Plot
+        self.plot_data(odeinit_output)
+        
+        # Update time interval
+        self.time_interval += 5
+        # Update boundary condition
+        self.y0 = odeinit_output[1, :]
+        
+        return odeinit_output
+    
+    
+    def plot_data(self, odeinit_output: ndarray) -> None:
+        """Plots provided data on canvas..
+        """
+        
+        # Construct functions list
+        functions = []
+        for i in range(odeinit_output.shape[1]):
+            functions.append(MplCanvas.FuncToPlot1D(self.time_interval, odeinit_output[:, i], r'$T_{y_num}$'.format(y_num=i)))
+        
         # Clear figure
-        self.plot.figure.clf()
+        self.plot.subplot.cla()
         # Plot data
         self.plot.plot_functions(functions, 't')
         self.plot.draw()

@@ -21,10 +21,12 @@ from numpy import ndarray
 class MplCanvas(FigureCanvas):
 
     def __init__(self):
-        # Figure and subplot
-        fig = self.create_figure()
+        # Figure
+        fig, subplot = self.create_figure()
         
         super(MplCanvas, self).__init__(fig)
+        
+        self.subplot = subplot
 
 
     def create_figure(self, title='') -> tuple[plt.Figure, plt.Axes]:
@@ -41,72 +43,33 @@ class MplCanvas(FigureCanvas):
         # Init figure
         fig = plt.figure(figsize=(20, 10))
         
+        fig, subplot = plt.subplot_mosaic([['bottom', 'bottom', 'bottom', 'bottom', 'bottom', 'BLANK']],
+                                          empty_sentinel="BLANK", figsize=(30, 15))
+        
         # Figure title
         fig.suptitle(title, fontsize=20, x=0.5, y=0.91)
         
-        return fig
-
-
-    def create_subplot(self, axes_names: tuple, y_axis_position=0) -> plt.Axes:
-        """Creates customized subplot.
-
-        Args:
-            fig (plt.Figure): figure, where to plot.
-            axes_names (tuple): names for Ox and Oy axes.
-            y_axis_position (int, optional): postion of Oy axis in plot (data wise). Defaults to 0.
-
-        Returns:
-            plt.Axes: generated subplot.
-        """
-        
-        # Subplot init
-        subplot = self.figure.add_subplot()
-        
-        # Move Ox line at 0
-        subplot.spines['bottom'].set_position(('data', 0))
-        # Move Oy line at provided position
-        subplot.spines['left'].set_position(('data', y_axis_position))
+        # Select subplot
+        subplot = subplot['bottom']
         
         # Hide the top and right spines.
         subplot.spines[['top', 'right']].set_visible(False)
         
-        # Draw arrows (as black triangles: ">k"/"^k") at the end of the axes.  In each
-        # case, one of the coordinates (0) is a data coordinate (i.e., y = 0 or x = 0,
-        # respectively) and the other one (1) is an axes coordinate (i.e., at the very
-        # right/top of the axes).  Also, disable clipping (clip_on=False) as the marker
-        # actually spills out of the axes.
-        # Ox arrow:
-        subplot.plot(1, 0, '>k', transform=subplot.get_yaxis_transform(), clip_on=False)
-        # Oy arrow:
-        subplot.plot(y_axis_position, 1, '^k', transform=subplot.get_xaxis_transform(), clip_on=False)
-        
         # Ox and Oy tick labels size
         subplot.tick_params(axis='both', which='major', labelsize=20)
         
-        # Hide Oy zero label
-        subplot.yaxis.get_major_ticks()[1].label1.set_visible(False)
-        
-        # Align Ox labels to the right of the ticks
-        for label in subplot.get_xticklabels():
-            label.set_horizontalalignment('left')
-        self.figure.align_xlabels()
-        
-        # Axes labels name, location and rotation
-        subplot.set_xlabel(axes_names[0], loc='right', fontsize=20)
-        subplot.set_ylabel(axes_names[1], loc='top', rotation=0, fontsize=20)
-        
-        return subplot
+        return fig, subplot
 
 
     class FuncToPlot1D:
         """Stores info about 1d function.
         """
         
-        def __init__(self, x: ndarray, y: ndarray, legend_name: str, style=None):
+        def __init__(self, x: ndarray, f: ndarray, legend_name: str, style=None):
             # X points
             self.x = x
             # Y points
-            self.y = y
+            self.f = f
             # Name in the legend
             self.legend_name = legend_name
             # Line style (string)
@@ -122,22 +85,42 @@ class MplCanvas(FigureCanvas):
             x_axis_name (str, optional): name for Ox axis. Defaults to ''.
         """
         
-        # Collect all minimum X positions
-        mins = np.empty((len(functions)))
+        # Collect all minimum X and Y positions
+        x_mins, y_mins = np.empty((len(functions))), np.empty((len(functions)))
         for i in range(len(functions)):
-            mins[i] = functions[i].x[0]
-        # Y axis position is at 0 or minimum value of combined grid
-        y_axis_position=max(0, np.min(mins))
+            x_mins[i] = functions[i].x[0]
+            y_mins[i] = functions[i].f[0]
+        # Y axis position is at minimum value of combined grid
+        y_axis_position = np.min(x_mins)
+        # X axis position is at minimum value of all functions
+        x_axis_position = np.min(y_mins)
         
-        # Init subplot
-        subplot = self.create_subplot((x_axis_name, ''), y_axis_position)
+        # Move Ox line at 0
+        self.subplot.spines['bottom'].set_position(('data', x_axis_position))
+        # Move Oy line at provided position
+        self.subplot.spines['left'].set_position(('data', y_axis_position))
+        
+        # Align Ox tick labels to the right of the ticks
+        for label in self.subplot.get_xticklabels():
+            label.set_horizontalalignment('left')
+        self.figure.align_xlabels()
+        # Align Oy tick labels above the ticks
+        for label in self.subplot.get_yticklabels():
+            label.set_verticalalignment('bottom')
+        self.figure.align_ylabels()
+        
+        # Axes labels name, location and rotation
+        self.subplot.set_xlabel(x_axis_name, loc='right', fontsize=20)
+        self.subplot.set_ylabel('', loc='top', rotation=0, fontsize=20)
         
         # Plot data
         for function in functions:
             if function.style == None:
-                subplot.plot(function.x, function.y, label=function.legend_name)
+                self.subplot.plot(function.x, function.f, label=function.legend_name)
             else:
-                subplot.plot(function.x, function.y, function.style, label=function.legend_name)
+                self.subplot.plot(function.x, function.f, function.style, label=function.legend_name)
         
-        # Show legend  
-        subplot.legend(fontsize=20, loc='upper right')
+        # Grid
+        self.subplot.grid()
+        # Legend  
+        self.subplot.legend(fontsize=20, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)

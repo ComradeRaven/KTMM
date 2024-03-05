@@ -38,30 +38,18 @@ def triangle_surface(vertices: ndarray) -> float:
     return math.sqrt(np.sum(cross**2)) / 2
 
 
-def calculate_temperatures(mesh: Mesh, config: Config) -> tuple[ndarray, list[ndarray]]:
+def calculate_temperatures(mesh: Mesh, config: Config, y0: ndarray, t: ndarray) -> ndarray:
     """Calculates temperatures of mesh elements.
 
     Args:
         mesh (Mesh): model.
         config (Config): config.
+        y0 (ndarray): boundary condition.
+        t (ndarray): time interval.
 
     Returns:
         (time range, [mesh part1 temperature, ...])
     """
     
-    # Equation evaluator
-    eq_eval = EquationEvaluator(mesh, config)
-    
     # Solve ODE
-    t = eval(config.t, globals(), locals())
-    odeinit_output = integrate.odeint(eq_eval.eval_equation, config.y0, t)
-    
-    # Extract functions values
-    y1 = odeinit_output[:, 0]
-    y2 = odeinit_output[:, 1]
-    y3 = odeinit_output[:, 2]
-    y4 = odeinit_output[:, 3]
-    y5 = odeinit_output[:, 4]
-    
-    # Construct result
-    return t, [y1, y2, y3, y4, y5], odeinit_output
+    return integrate.odeint(EquationEvaluator(mesh, config).eval_equation, y0, t)
