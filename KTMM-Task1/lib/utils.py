@@ -50,7 +50,7 @@ def calculate_temperatures(mesh: Mesh, config: Config) -> tuple[ndarray, list[nd
     """
     
     # Equation evaluator
-    eq_eval = EquationEvaluator(mesh, config, 5)
+    eq_eval = EquationEvaluator(mesh, config)
     
     # Solve ODE
     t = eval(config.t, globals(), locals())

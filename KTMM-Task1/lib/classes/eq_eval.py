@@ -24,7 +24,7 @@ class EquationEvaluator:
     """Holds equation parts and can evaluate it in given point t with given vector y.
     """
     
-    def __init__(self, mesh: Mesh, config: Config, iters: int) -> None:
+    def __init__(self, mesh: Mesh, config: Config) -> None:
         # K_ij
         self.k = - mesh.intercestions_surfaces * config.therm_cond_coefs
         # Surfaces heat loss
@@ -33,8 +33,6 @@ class EquationEvaluator:
         self.q_r = config.q_r
         # Vector c
         self.c = config.c
-        
-        self.iters = iters
     
     
     def eval_equation(self, y, t) -> ndarray:
@@ -62,11 +60,6 @@ class EquationEvaluator:
         
         # Q_R
         q_r = eval(self.q_r, globals(), locals())
-        
-        if self.iters > 0:
-            print(np.sum(q_tc, axis=1))
-            print((np.sum(q_tc, axis=1) + q_e + q_r) / self.c)
-            self.iters -= 1
         
         # Formula from docs
         return (np.sum(q_tc, axis=1) + q_e + q_r) / self.c
