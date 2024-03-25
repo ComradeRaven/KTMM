@@ -125,11 +125,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.config = Config(config['eps'], config['c'], config['lambda'], config['Q_R'], config['t'])
                     
                     # Resolve y0
-                    if config['y0'][0] == 'fsolve':
+                    if config['y0'][0] == 'y0':
+                        self.config.y0 = np.array(config['y0'][1:])
+                    elif config['y0'][0] == 'x0':
                         self.config.y0 = optimize.fsolve(EquationEvaluator(self.mesh, self.config).eval_equation_stationary,
-                                                         config['y0'][1:])
+                                                         np.array(config['y0'][1:]))
                     else:
-                        self.config.y0 = config['y0'][1:]
+                        raise Exception('Invalid config')
                     
                     # Debug
                     print('Loaded config: ',
