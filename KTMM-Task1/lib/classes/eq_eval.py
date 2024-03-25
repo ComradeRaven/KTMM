@@ -64,3 +64,30 @@ class EquationEvaluator:
         
         # Formula from docs
         return (np.sum(q_tc, axis=1) + q_e + q_r) / self.c
+    
+    
+    def eval_equation_stationary(self, y) -> ndarray:
+        """Evaluates task equation.
+
+        Args:
+            y (_type_): y vector.
+            t (_type_): time point.
+            mesh (Mesh): model.
+            config (Config): config.
+
+        Returns:
+            dy.
+        """
+        
+        # Q_TC
+        q_tc = np.empty(self.k.shape)
+        for i in range(q_tc.shape[0]):
+            for j in range(q_tc.shape[1]):
+                q_tc[i, j] = y[i] - y[j]
+        q_tc *= self.k
+        
+        # Q_E
+        q_e = self.heat_loss * (y/100)**4
+        
+        # Formula from docs
+        return (np.sum(q_tc, axis=1) + q_e) / self.c

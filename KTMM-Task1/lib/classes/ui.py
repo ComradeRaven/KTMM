@@ -11,11 +11,14 @@ import json
 from PyQt6 import QtCore
 from PyQt6 import QtWidgets
 from PyQt6.QtGui import QAction
+# ODE optimizer
+import scipy.optimize as optimize
 # Custom modules
 import lib.utils as utils
 from lib.classes.mesh import Mesh
 from lib.classes.config import Config
 from lib.classes.plotting import MplCanvas
+from lib.classes.eq_eval import EquationEvaluator
 
 # For annotations
 from numpy import ndarray
@@ -118,9 +121,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 
                 # Check keys
                 if {'eps', 'c', 'lambda', 'Q_R', 'y0', 't'} <= config.keys():
-                    
                     # Save config
-                    self.config = Config(config['eps'], config['c'], config['lambda'], config['Q_R'], config['y0'], config['t'])
+                    self.config = Config(config['eps'], config['c'], config['lambda'], config['Q_R'], config['t'])
+                    
+                    # Resolve y0
+                    if config['y0'][0] == 'fsolve':
+                        self.config.y0 = optimize.fsolve(EquationEvaluator(self.mesh, self.config).eval_equation_stationary,
+                                                         config['y0'][1:])
+                    else:
+                        self.config.y0 = config['y0'][1:]
                     
                     # Debug
                     print('Loaded config: ',
