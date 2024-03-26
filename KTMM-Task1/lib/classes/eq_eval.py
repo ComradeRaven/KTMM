@@ -90,4 +90,4 @@ class EquationEvaluator:
         q_e = self.heat_loss * (y/100)**4
         
         # Formula from docs
-        return (np.sum(q_tc, axis=1) + q_e) / self.c
+        return np.sum(q_tc, axis=1) + q_e
